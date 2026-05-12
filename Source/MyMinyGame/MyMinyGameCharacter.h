@@ -54,7 +54,14 @@ public:
 	/** Constructor */
 	AMyMinyGameCharacter();	
 
+	/** Tick */
+	virtual void Tick(float DeltaSeconds) override;
+
 protected:
+
+	/** Idle animation to play when the character is not moving */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
+	class UAnimSequence* IdleAnimationAsset;
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

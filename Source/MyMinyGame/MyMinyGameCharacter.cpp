@@ -11,9 +11,13 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "MyMinyGame.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Animation/AnimSequence.h"
 
 AMyMinyGameCharacter::AMyMinyGameCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -46,8 +50,46 @@ AMyMinyGameCharacter::AMyMinyGameCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	// Load the idle animation asset
+	static ConstructorHelpers::FObjectFinder<UAnimSequence> IdleAnimObj(TEXT("/Game/CustomContents/Animation/RTG_Bouncing"));
+	if (IdleAnimObj.Succeeded())
+	{
+		IdleAnimationAsset = IdleAnimObj.Object;
+	}
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+void AMyMinyGameCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (IdleAnimationAsset)
+	{
+		// Check if we are moving
+		float Velocity = GetVelocity().Size();
+		bool bIsMoving = Velocity > 0.1f;
+		bool bIsFalling = GetCharacterMovement()->IsFalling();
+
+		if (!bIsMoving && !bIsFalling)
+		{
+			// If not moving and not falling, play the idle animation override
+			if (GetMesh()->GetAnimationMode() != EAnimationMode::AnimationSingleNode)
+			{
+				GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+				GetMesh()->PlayAnimation(IdleAnimationAsset, true);
+			}
+		}
+		else
+		{
+			// If moving or falling, go back to the animation blueprint
+			if (GetMesh()->GetAnimationMode() != EAnimationMode::AnimationBlueprint)
+			{
+				GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+			}
+		}
+	}
 }
 
 void AMyMinyGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
