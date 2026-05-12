@@ -49,6 +49,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	/** Attack Input Action */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* AttackAction;
+
 public:
 
 	/** Constructor */
@@ -63,6 +67,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
 	class UAnimSequence* IdleAnimationAsset;
 
+	/** Attack Anim Montage */
+	UPROPERTY(EditAnywhere, Category="Animation")
+	class UAnimMontage* AttackMontage;
+
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -73,6 +81,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	/** Called for attack input */
+	void Attack();
 
 public:
 

@@ -72,9 +72,16 @@ void AMyMinyGameCharacter::Tick(float DeltaSeconds)
 		bool bIsMoving = Velocity > 0.1f;
 		bool bIsFalling = GetCharacterMovement()->IsFalling();
 
-		if (!bIsMoving && !bIsFalling)
+		// Check if any montage is currently playing
+		bool bIsPlayingMontage = false;
+		if (GetMesh()->GetAnimInstance())
 		{
-			// If not moving and not falling, play the idle animation override
+			bIsPlayingMontage = GetMesh()->GetAnimInstance()->IsAnyMontagePlaying();
+		}
+
+		if (!bIsMoving && !bIsFalling && !bIsPlayingMontage)
+		{
+			// If not moving, not falling, and NOT playing a montage, play the idle animation override
 			if (GetMesh()->GetAnimationMode() != EAnimationMode::AnimationSingleNode)
 			{
 				GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
@@ -83,7 +90,7 @@ void AMyMinyGameCharacter::Tick(float DeltaSeconds)
 		}
 		else
 		{
-			// If moving or falling, go back to the animation blueprint
+			// If moving, falling, or playing a montage, go back to the animation blueprint
 			if (GetMesh()->GetAnimationMode() != EAnimationMode::AnimationBlueprint)
 			{
 				GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
@@ -107,6 +114,9 @@ void AMyMinyGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyMinyGameCharacter::Look);
+
+		// Attacking
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyMinyGameCharacter::Attack);
 	}
 	else
 	{
@@ -130,6 +140,20 @@ void AMyMinyGameCharacter::Look(const FInputActionValue& Value)
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
+}
+
+void AMyMinyGameCharacter::Attack()
+{
+	if (AttackMontage)
+	{
+		// Ensure we switch back to Animation Blueprint mode so the montage can play via Slots
+		if (GetMesh()->GetAnimationMode() != EAnimationMode::AnimationBlueprint)
+		{
+			GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		}
+		
+		PlayAnimMontage(AttackMontage);
+	}
 }
 
 void AMyMinyGameCharacter::DoMove(float Right, float Forward)
