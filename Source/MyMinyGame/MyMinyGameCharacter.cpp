@@ -144,7 +144,7 @@ void AMyMinyGameCharacter::Look(const FInputActionValue& Value)
 
 void AMyMinyGameCharacter::Attack()
 {
-	if (AttackMontage)
+	if (AttackMontage && bCanAttack)
 	{
 		// Ensure we switch back to Animation Blueprint mode so the montage can play via Slots
 		if (GetMesh()->GetAnimationMode() != EAnimationMode::AnimationBlueprint)
@@ -153,7 +153,19 @@ void AMyMinyGameCharacter::Attack()
 		}
 		
 		PlayAnimMontage(AttackMontage);
+
+		// Start Cooldown
+		bCanAttack = false;
+
+		// Set timer to reset attack
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMyMinyGameCharacter::ResetAttack, AttackCooldown, false);
 	}
+}
+
+void AMyMinyGameCharacter::ResetAttack()
+{
+	bCanAttack = true;
 }
 
 void AMyMinyGameCharacter::DoMove(float Right, float Forward)

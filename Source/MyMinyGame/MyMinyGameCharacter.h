@@ -71,6 +71,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Animation")
 	class UAnimMontage* AttackMontage;
 
+	/** Attack cooldown duration in seconds */
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float AttackCooldown = 1.0f;
+
+	/** Flag to check if the character can attack */
+	bool bCanAttack = true;
+
+	/** Resets the attack flag */
+	void ResetAttack();
+
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
